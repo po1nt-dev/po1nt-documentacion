@@ -46,59 +46,7 @@ Po1nt integra servicios financieros de terceros como remesas internacionales (Ai
 
 ## Diagrama de Arquitectura de Alto Nivel
 
-```mermaid
-flowchart TB
-    subgraph "Interfaz de Usuario"
-        A[Portal Admin Web<br/>Nuxt 3]
-        B[Aplicacion POS<br/>Windows Desktop]
-        C[Portal Desktop<br/>Windows Forms]
-    end
-
-    subgraph "Capa de Microservicios"
-        D[MS-Autn<br/>Autenticacion]
-        E[MS-configs<br/>Configuracion]
-        F[MS-Products<br/>Productos]
-        G[MS-Sync<br/>Sincronizacion]
-        H[MS-Logger<br/>Logging]
-        I[ms-procesos-locales<br/>Facturacion DTE]
-        J[ms-corresponsales<br/>Pagos Terceros]
-    end
-
-    subgraph "Servicios de Sincronizacion"
-        K[Sincronizadores<br/>Windows Services]
-    end
-
-    subgraph "Almacenamiento"
-        L[(SQL Server<br/>Base de Datos Central)]
-        M[(SQL Server<br/>BD Sucursales)]
-    end
-
-    subgraph "Integraciones Externas"
-        N[Ministerio Hacienda<br/>DTE]
-        O[Proveedores Pago<br/>TigoMoney/Airpak]
-    end
-
-    A --> D
-    A --> E
-    A --> F
-    B --> M
-    B --> I
-    C --> L
-
-    D --> L
-    E --> L
-    F --> L
-    G --> L
-    H --> L
-    I --> L
-    J --> L
-
-    K --> L
-    K --> M
-
-    I --> N
-    J --> O
-```
+![Arquitectura de Alto Nivel](diagramas/imgs/01-arquitectura-alto-nivel.png)
 
 ## Capacidades Principales del Sistema
 
@@ -146,124 +94,11 @@ La plataforma Po1nt implementa una arquitectura hibrida que combina microservici
 
 ## Diagrama de Componentes con Tecnologias
 
-```mermaid
-flowchart TB
-    subgraph "Frontend"
-        A[nuxt-front-admin<br/>Nuxt 3 + Vue 3 + TypeScript]
-        B[po1nt-pos<br/>VB.NET + WinForms]
-        C[portaladministrativo-desktop<br/>C# + WinForms]
-    end
-
-    subgraph "API Gateway / Microservicios"
-        D[MS-Autn<br/>.NET 7 + JWT + BCrypt]
-        E[MS-configs<br/>.NET 7 + Dapper]
-        F[MS-Products<br/>.NET 7 + Dapper]
-        G[MS-Sync<br/>.NET 7 + RestSharp]
-        H[MS-Logger<br/>.NET 7 + Dapper]
-        I[ms-procesos-locales<br/>.NET 7 + BitWork]
-        J[ms-corresponsales<br/>.NET 7 + RestSharp]
-    end
-
-    subgraph "Libreria Compartida"
-        K[shared-libs<br/>.NET 7 + Dapper + Prometheus]
-    end
-
-    subgraph "Sincronizadores Windows"
-        L[epdPo1nt_Syncronizador<br/>VB.NET + SQL Server]
-        M[WS-SincronizadorSalas<br/>VB.NET + Timers]
-        N[WS-SincronizacionBascula<br/>VB.NET + SQL Server]
-        O[sincronizacion-sala<br/>VB.NET + HTTP]
-        P[ws-reenviodte<br/>VB.NET + DTE API]
-    end
-
-    subgraph "Jobs y Migraciones"
-        Q[cron-jobs<br/>.NET 7 + SQL Server]
-        R[JOB-Migrations<br/>.NET 7 + EF Core]
-        S[job-corresponsales-migrations<br/>.NET 7 + EF Core]
-    end
-
-    subgraph "Monitoreo"
-        T[po1nt-monitoring<br/>Prometheus + Grafana + Tempo]
-    end
-
-    subgraph "Base de Datos"
-        U[(SQL Server Central<br/>po1nt_pos / selectos3)]
-        V[(SQL Server Sucursales<br/>SatellitePOS_MH)]
-    end
-
-    subgraph "Integraciones Externas"
-        W[Ministerio Hacienda<br/>API DTE]
-        X[PuntoXpress<br/>Colectores]
-        Y[Cuscatlan/Airpak<br/>Remesas]
-        Z[TigoMoney<br/>Dinero Movil]
-    end
-
-    A --> D & E & F
-    B --> V
-    B --> I
-    C --> U
-
-    D --> K
-    E --> K
-    F --> K
-    G --> K
-    H --> K
-    I --> K
-    J --> K
-
-    K --> U
-
-    L --> U & V
-    M --> U & V
-    N --> U
-    O --> U & V
-    P --> U
-
-    Q --> U
-    R --> U
-    S --> U
-
-    T --> U
-
-    I --> W
-    J --> X & Y & Z
-```
+![Componentes con Tecnologias](diagramas/imgs/02-componentes-tecnologias.png)
 
 ## Diagrama de Flujo de Datos Principal
 
-```mermaid
-flowchart LR
-    subgraph "Origen"
-        A[Portal Admin]
-        B[POS Desktop]
-    end
-
-    subgraph "Procesamiento"
-        C[Microservicios<br/>.NET 7]
-        D[Sincronizadores<br/>Windows Services]
-    end
-
-    subgraph "Almacenamiento"
-        E[(BD Central)]
-        F[(BD Sucursales)]
-    end
-
-    subgraph "Salida"
-        G[Terminales POS]
-        H[Reportes]
-        I[DTE/Hacienda]
-    end
-
-    A -->|HTTP/JSON| C
-    B -->|SQL| F
-    C -->|Dapper| E
-    D -->|SQL| E
-    D -->|SQL| F
-    E -->|Sync| F
-    F -->|Data| G
-    E -->|Query| H
-    C -->|API| I
-```
+![Flujo de Datos Principal](diagramas/imgs/03-flujo-datos-principal.png)
 
 ## Patrones Arquitectonicos Utilizados
 
@@ -341,24 +176,7 @@ flowchart LR
 
 ## 3.1 Flujo de Autenticacion
 
-```mermaid
-sequenceDiagram
-    participant U as Usuario
-    participant F as Frontend (Nuxt)
-    participant A as MS-Autn
-    participant DB as SQL Server
-
-    U->>F: Ingresa credenciales
-    F->>A: POST /api/Auth {username, password}
-    A->>DB: SELECT user WHERE username
-    DB-->>A: User data
-    A->>A: BCrypt.Verify(password)
-    A->>A: Crypto.Encrypt(JWT)
-    A->>DB: INSERT session
-    A-->>F: {token, type: "Bearer", duration: 20}
-    F->>F: Almacena token en cookie
-    F-->>U: Redirige a dashboard
-```
+![Flujo de Autenticacion](diagramas/imgs/07-flujo-autenticacion.png)
 
 **Descripcion paso a paso:**
 1. Usuario ingresa usuario y contrasena en la pagina de login
@@ -374,34 +192,7 @@ sequenceDiagram
 
 ## 3.2 Flujo de Sincronizacion de Productos
 
-```mermaid
-sequenceDiagram
-    participant A as Admin (Nuxt)
-    participant P as MS-Products
-    participant S as SyncEvent
-    participant DB as SQL Server
-    participant Sync as MS-Sync
-    participant T as Terminal POS
-
-    A->>P: POST /api/products {producto}
-    P->>DB: INSERT products
-    P->>S: SyncEvent.save({action: "create-product"})
-    S->>DB: INSERT terminal_sync (pendiente)
-    P-->>A: 200 OK
-
-    Note over T,Sync: Cada 5 minutos
-    T->>Sync: GET /api/Event/sync
-    Sync->>DB: SELECT terminal_sync pendientes
-    Sync-->>T: [{type: "products", guid}]
-    T->>Sync: GET /api/Sync/products
-    Sync->>DB: EXEC SP_Sync_Products
-    DB-->>Sync: DataTable productos
-    Sync->>DB: UPDATE date_send
-    Sync-->>T: JSON productos
-    T->>T: Procesa productos
-    T->>Sync: POST /api/Sync/products
-    Sync->>DB: UPDATE date_confirm
-```
+![Flujo de Sincronizacion de Productos](diagramas/imgs/08-flujo-sincronizacion-productos.png)
 
 **Descripcion paso a paso:**
 1. Administrador crea/actualiza producto desde portal web
@@ -415,30 +206,7 @@ sequenceDiagram
 
 ## 3.3 Flujo de Venta en POS
 
-```mermaid
-sequenceDiagram
-    participant C as Cajero
-    participant POS as po1nt-pos
-    participant DB as BD Local
-    participant L as ms-procesos-locales
-    participant MH as Ministerio Hacienda
-
-    C->>POS: Escanea productos
-    POS->>DB: SELECT precio, promocion
-    DB-->>POS: Datos producto
-    POS->>POS: Calcula totales
-    C->>POS: Selecciona forma pago
-    C->>POS: Finaliza venta
-    POS->>DB: INSERT transaccion
-    POS->>L: POST /api/FacturacionElectronica/sendFact
-    L->>L: Genera estructura DTE
-    L->>MH: Envia factura electronica
-    MH-->>L: Sello y codigo
-    L->>DB: UPDATE transaccion (sello)
-    L-->>POS: DTE confirmado
-    POS->>POS: Imprime recibo
-    POS-->>C: Venta completada
-```
+![Flujo de Venta en POS](diagramas/imgs/09-flujo-venta-pos.png)
 
 **Descripcion paso a paso:**
 1. Cajero escanea codigos de barra de productos
@@ -455,32 +223,7 @@ sequenceDiagram
 
 ## 3.4 Flujo de Pago de Remesa
 
-```mermaid
-sequenceDiagram
-    participant C as Cajero
-    participant POS as po1nt-pos
-    participant MS as ms-corresponsales
-    participant CU as Cuscatlan API
-    participant DB as SQL Server
-
-    C->>POS: Ingresa datos remesa
-    POS->>MS: POST /api/CuscaTransferInfo
-    MS->>CU: TransferInfo request
-    CU-->>MS: Datos de remesa
-    MS-->>POS: Info beneficiario, monto
-
-    C->>POS: Confirma pago
-    POS->>MS: POST /api/CuscaLookupPerson
-    MS->>CU: Busca beneficiario
-    CU-->>MS: Datos persona
-
-    POS->>MS: POST /api/CuscaConfirmSimplifiedPayment
-    MS->>CU: Confirma pago
-    CU-->>MS: Confirmacion
-    MS->>DB: INSERT PxTransactions
-    MS-->>POS: Recibo remesa
-    POS->>POS: Imprime comprobante
-```
+![Flujo de Pago de Remesa](diagramas/imgs/10-flujo-pago-remesa.png)
 
 **Descripcion paso a paso:**
 1. Cajero ingresa numero de referencia de remesa
@@ -496,88 +239,19 @@ sequenceDiagram
 
 ## 3.5 Flujo de Recarga Telefonica
 
-```mermaid
-sequenceDiagram
-    participant C as Cajero
-    participant POS as po1nt-pos
-    participant MS as ms-corresponsales
-    participant T as Tigo/Claro API
-    participant DB as SQL Server
-
-    C->>POS: Selecciona operador y monto
-    POS->>MS: GET /api/BalanceCompanies
-    MS->>T: Consulta saldo agente
-    T-->>MS: Saldo disponible
-    MS-->>POS: Saldo OK
-
-    C->>POS: Ingresa numero telefono
-    POS->>MS: POST /api/RechargeCompanies
-    MS->>T: Ejecuta recarga
-    T-->>MS: Confirmacion recarga
-    MS->>DB: INSERT transaccion
-    MS-->>POS: Recarga exitosa
-    POS->>POS: Imprime comprobante
-```
+![Flujo de Recarga Telefonica](diagramas/imgs/11-flujo-recarga-telefonica.png)
 
 ---
 
 ## 3.6 Flujo de Sincronizacion Batch (Timers)
 
-```mermaid
-sequenceDiagram
-    participant T as Timer Service
-    participant API as MS-Sync API
-    participant DBC as BD Central
-    participant DBL as BD Local
-    participant SP as Stored Procedures
-
-    Note over T: Cada 5 minutos
-    T->>API: GET /api/Event/sync (token)
-    API->>DBC: Query cambios pendientes
-    DBC-->>API: Lista cambios
-
-    loop Por cada cambio
-        T->>API: GET /api/Sync/{tipo}
-        API->>DBC: EXEC SP_{tipo}
-        DBC-->>API: DataTable
-        API-->>T: JSON datos
-        T->>DBL: EXEC SP_Apply_{tipo}
-        DBL-->>T: Aplicado
-        T->>API: POST /api/Sync/{tipo} (confirmar)
-        API->>DBC: UPDATE date_confirm
-    end
-```
+![Flujo de Sincronizacion Batch](diagramas/imgs/12-flujo-sincronizacion-batch.png)
 
 ---
 
 ## 3.7 Flujo de Reenvio DTE (Automatico)
 
-```mermaid
-sequenceDiagram
-    participant S as ws-reenviodte
-    participant DB as SQL Server
-    participant L as ms-procesos-locales
-    participant MH as Ministerio Hacienda
-
-    Note over S: 1:00 AM - 6:00 AM
-    S->>S: Timer cada 30 min
-    S->>DB: SELECT transacciones sin sello
-    DB-->>S: Lista transacciones fallidas
-
-    loop Por cada transaccion
-        S->>L: POST /api/FacturacionElectronica/sendFact
-        L->>MH: Envia DTE
-        alt Exito
-            MH-->>L: Sello electronico
-            L->>DB: UPDATE transaccion (sello)
-        else Fallo
-            MH-->>L: Error
-            L->>DB: INSERT log error
-        end
-    end
-
-    S->>S: Escribe log resultados
-```
+![Flujo de Reenvio DTE](diagramas/imgs/13-flujo-reenvio-dte.png)
 
 ---
 
@@ -618,71 +292,7 @@ sequenceDiagram
 
 ## Diagrama de Dependencias
 
-```mermaid
-flowchart TB
-    subgraph "Frontend"
-        A[nuxt-front-admin]
-    end
-
-    subgraph "Microservicios Core"
-        B[MS-Autn]
-        C[MS-configs]
-        D[MS-Products]
-        E[MS-Sync]
-        F[MS-Logger]
-    end
-
-    subgraph "Microservicios Negocio"
-        G[ms-procesos-locales]
-        H[ms-corresponsales]
-    end
-
-    subgraph "Libreria Base"
-        I[shared-libs]
-    end
-
-    subgraph "Aplicaciones Desktop"
-        J[po1nt-pos]
-        K[portaladministrativo]
-    end
-
-    subgraph "Sincronizadores"
-        L[epdPo1nt_Syncronizador]
-        M[WS-SincronizadorSalas]
-        N[WS-SincronizacionBascula]
-        O[ws-reenviodte]
-    end
-
-    subgraph "Infraestructura"
-        P[(SQL Server)]
-        Q[po1nt-monitoring]
-    end
-
-    subgraph "Externos"
-        R[Ministerio Hacienda]
-        S[Proveedores Pago]
-    end
-
-    A --> B & C & D
-    B --> I --> P
-    C --> I
-    C --> E
-    D --> I
-    D --> E
-    E --> I
-    F --> I
-    G --> I
-    G --> R
-    H --> I
-    H --> S
-    J --> G & H
-    J --> P
-    K --> P
-    L & M & N --> E
-    L & M & N & O --> P
-    O --> G
-    Q --> P
-```
+![Diagrama de Dependencias](diagramas/imgs/04-dependencias.png)
 
 ## Componentes Criticos (Alta Dependencia)
 

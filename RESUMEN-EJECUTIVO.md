@@ -10,59 +10,7 @@ Po1nt integra servicios financieros de terceros como remesas internacionales (Ai
 
 ## Diagrama de Arquitectura de Alto Nivel
 
-```mermaid
-flowchart TB
-    subgraph "Interfaz de Usuario"
-        A[Portal Admin Web<br/>Nuxt 3]
-        B[Aplicacion POS<br/>Windows Desktop]
-        C[Portal Desktop<br/>Windows Forms]
-    end
-
-    subgraph "Capa de Microservicios"
-        D[MS-Autn<br/>Autenticacion]
-        E[MS-configs<br/>Configuracion]
-        F[MS-Products<br/>Productos]
-        G[MS-Sync<br/>Sincronizacion]
-        H[MS-Logger<br/>Logging]
-        I[ms-procesos-locales<br/>Facturacion DTE]
-        J[ms-corresponsales<br/>Pagos Terceros]
-    end
-
-    subgraph "Servicios de Sincronizacion"
-        K[Sincronizadores<br/>Windows Services]
-    end
-
-    subgraph "Almacenamiento"
-        L[(SQL Server<br/>Base de Datos Central)]
-        M[(SQL Server<br/>BD Sucursales)]
-    end
-
-    subgraph "Integraciones Externas"
-        N[Ministerio Hacienda<br/>DTE]
-        O[Proveedores Pago<br/>TigoMoney/Airpak]
-    end
-
-    A --> D
-    A --> E
-    A --> F
-    B --> M
-    B --> I
-    C --> L
-
-    D --> L
-    E --> L
-    F --> L
-    G --> L
-    H --> L
-    I --> L
-    J --> L
-
-    K --> L
-    K --> M
-
-    I --> N
-    J --> O
-```
+![Arquitectura de Alto Nivel](diagramas/imgs/01-arquitectura-alto-nivel.png)
 
 ## Capacidades Principales del Sistema
 
