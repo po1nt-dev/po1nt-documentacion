@@ -95,4 +95,4 @@ flowchart TB
 
 ---
 
-*Documento generado automaticamente - Febrero 2026*
+

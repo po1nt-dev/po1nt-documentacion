@@ -184,4 +184,4 @@ Para un despliegue desde cero, seguir este orden:
 
 ---
 
-*Documento generado automaticamente - Febrero 2026*
+

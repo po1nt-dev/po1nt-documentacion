@@ -256,4 +256,4 @@ sequenceDiagram
 
 ---
 
-*Documento generado automaticamente - Febrero 2026*
+

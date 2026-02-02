@@ -212,4 +212,4 @@ flowchart LR
 
 ---
 
-*Documento generado automaticamente - Febrero 2026*
+
