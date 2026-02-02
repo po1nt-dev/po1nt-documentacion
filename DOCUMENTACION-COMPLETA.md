@@ -1,12 +1,13 @@
-# Documentacion Tecnica Completa
-# Plataforma Po1nt - Sistema de Punto de Venta
+
+# Plataforma po1nt - POS
+## Documentacion Tecnica Completa
 
 ---
 
 **Version:** 1.0
 **Fecha:** Febrero 2026
 **Repositorios documentados:** 22
-**Organizacion:** Po1nt-Dev
+**Organizacion:** n1co
 
 ---
 
