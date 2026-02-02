@@ -1,0 +1,71 @@
+flowchart TB
+    subgraph "Frontend"
+        style Frontend fill:#e1f5fe
+        A[nuxt-front-admin]
+    end
+
+    subgraph "Microservicios Core"
+        style Core fill:#fff3e0
+        B[MS-Autn]
+        C[MS-configs]
+        D[MS-Products]
+        E[MS-Sync]
+        F[MS-Logger]
+    end
+
+    subgraph "Microservicios Negocio"
+        style Negocio fill:#fff3e0
+        G[ms-procesos-locales]
+        H[ms-corresponsales]
+    end
+
+    subgraph "Libreria Base"
+        style Base fill:#f3e5f5
+        I[shared-libs]
+    end
+
+    subgraph "Aplicaciones Desktop"
+        style Desktop fill:#e1f5fe
+        J[po1nt-pos]
+        K[portaladministrativo]
+    end
+
+    subgraph "Sincronizadores"
+        style Sync fill:#fff3e0
+        L[epdPo1nt_Syncronizador]
+        M[WS-SincronizadorSalas]
+        N[WS-SincronizacionBascula]
+        O[ws-reenviodte]
+    end
+
+    subgraph "Infraestructura"
+        style Infra fill:#e8f5e9
+        P[(SQL Server)]
+        Q[po1nt-monitoring]
+    end
+
+    subgraph "Externos"
+        style Externos fill:#fce4ec
+        R[Ministerio Hacienda]
+        S[Proveedores Pago]
+    end
+
+    A --> B & C & D
+    B --> I --> P
+    C --> I
+    C --> E
+    D --> I
+    D --> E
+    E --> I
+    F --> I
+    G --> I
+    G --> R
+    H --> I
+    H --> S
+    J --> G & H
+    J --> P
+    K --> P
+    L & M & N --> E
+    L & M & N & O --> P
+    O --> G
+    Q --> P

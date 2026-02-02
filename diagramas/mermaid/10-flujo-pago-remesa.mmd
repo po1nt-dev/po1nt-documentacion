@@ -1,0 +1,24 @@
+sequenceDiagram
+    participant C as Cajero
+    participant POS as po1nt-pos
+    participant MS as ms-corresponsales
+    participant CU as Cuscatlan API
+    participant DB as SQL Server
+
+    C->>POS: Ingresa datos remesa
+    POS->>MS: POST /api/CuscaTransferInfo
+    MS->>CU: TransferInfo request
+    CU-->>MS: Datos de remesa
+    MS-->>POS: Info beneficiario, monto
+
+    C->>POS: Confirma pago
+    POS->>MS: POST /api/CuscaLookupPerson
+    MS->>CU: Busca beneficiario
+    CU-->>MS: Datos persona
+
+    POS->>MS: POST /api/CuscaConfirmSimplifiedPayment
+    MS->>CU: Confirma pago
+    CU-->>MS: Confirmacion
+    MS->>DB: INSERT PxTransactions
+    MS-->>POS: Recibo remesa
+    POS->>POS: Imprime comprobante

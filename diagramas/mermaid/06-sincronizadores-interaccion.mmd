@@ -1,0 +1,25 @@
+flowchart TB
+    subgraph "Sincronizadores"
+        A[epdPo1nt_Syncronizador]
+        B[WS-SincronizadorSalas]
+        C[WS-SincronizacionBascula]
+        D[sincronizacion-sala]
+        E[ws-reenviodte]
+    end
+
+    subgraph "APIs"
+        F[MS-Sync API]
+        G[Ministerio Hacienda]
+    end
+
+    subgraph "Bases de Datos"
+        H[(BD Central)]
+        I[(BD Sucursales)]
+    end
+
+    A --> H & I
+    B --> F --> H
+    B --> I
+    C --> H
+    D --> F
+    E --> H & G

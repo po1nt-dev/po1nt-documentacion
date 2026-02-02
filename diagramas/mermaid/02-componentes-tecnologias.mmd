@@ -1,0 +1,88 @@
+flowchart TB
+    subgraph "Frontend"
+        style Frontend fill:#e1f5fe
+        A[nuxt-front-admin<br/>Nuxt 3 + Vue 3 + TypeScript]
+        B[po1nt-pos<br/>VB.NET + WinForms]
+        C[portaladministrativo-desktop<br/>C# + WinForms]
+    end
+
+    subgraph "API Gateway / Microservicios"
+        style API fill:#fff3e0
+        D[MS-Autn<br/>.NET 7 + JWT + BCrypt]
+        E[MS-configs<br/>.NET 7 + Dapper]
+        F[MS-Products<br/>.NET 7 + Dapper]
+        G[MS-Sync<br/>.NET 7 + RestSharp]
+        H[MS-Logger<br/>.NET 7 + Dapper]
+        I[ms-procesos-locales<br/>.NET 7 + BitWork]
+        J[ms-corresponsales<br/>.NET 7 + RestSharp]
+    end
+
+    subgraph "Libreria Compartida"
+        style Libreria fill:#f3e5f5
+        K[shared-libs<br/>.NET 7 + Dapper + Prometheus]
+    end
+
+    subgraph "Sincronizadores Windows"
+        style Sincronizadores fill:#fff3e0
+        L[epdPo1nt_Syncronizador<br/>VB.NET + SQL Server]
+        M[WS-SincronizadorSalas<br/>VB.NET + Timers]
+        N[WS-SincronizacionBascula<br/>VB.NET + SQL Server]
+        O[sincronizacion-sala<br/>VB.NET + HTTP]
+        P[ws-reenviodte<br/>VB.NET + DTE API]
+    end
+
+    subgraph "Jobs y Migraciones"
+        style Jobs fill:#fff3e0
+        Q[cron-jobs<br/>.NET 7 + SQL Server]
+        R[JOB-Migrations<br/>.NET 7 + EF Core]
+        S[job-corresponsales-migrations<br/>.NET 7 + EF Core]
+    end
+
+    subgraph "Monitoreo"
+        style Monitoreo fill:#e8f5e9
+        T[po1nt-monitoring<br/>Prometheus + Grafana + Tempo]
+    end
+
+    subgraph "Base de Datos"
+        style Base fill:#e8f5e9
+        U[(SQL Server Central<br/>po1nt_pos / selectos3)]
+        V[(SQL Server Sucursales<br/>SatellitePOS_MH)]
+    end
+
+    subgraph "Integraciones Externas"
+        style Integraciones fill:#fce4ec
+        W[Ministerio Hacienda<br/>API DTE]
+        X[PuntoXpress<br/>Colectores]
+        Y[Cuscatlan/Airpak<br/>Remesas]
+        Z[TigoMoney<br/>Dinero Movil]
+    end
+
+    A --> D & E & F
+    B --> V
+    B --> I
+    C --> U
+
+    D --> K
+    E --> K
+    F --> K
+    G --> K
+    H --> K
+    I --> K
+    J --> K
+
+    K --> U
+
+    L --> U & V
+    M --> U & V
+    N --> U
+    O --> U & V
+    P --> U
+
+    Q --> U
+    R --> U
+    S --> U
+
+    T --> U
+
+    I --> W
+    J --> X & Y & Z

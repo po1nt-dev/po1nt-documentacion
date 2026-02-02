@@ -1,0 +1,31 @@
+flowchart LR
+    subgraph "Origen"
+        A[Portal Admin]
+        B[POS Desktop]
+    end
+
+    subgraph "Procesamiento"
+        C[Microservicios<br/>.NET 7]
+        D[Sincronizadores<br/>Windows Services]
+    end
+
+    subgraph "Almacenamiento"
+        E[(BD Central)]
+        F[(BD Sucursales)]
+    end
+
+    subgraph "Salida"
+        G[Terminales POS]
+        H[Reportes]
+        I[DTE/Hacienda]
+    end
+
+    A -->|HTTP/JSON| C
+    B -->|SQL| F
+    C -->|Dapper| E
+    D -->|SQL| E
+    D -->|SQL| F
+    E -->|Sync| F
+    F -->|Data| G
+    E -->|Query| H
+    C -->|API| I

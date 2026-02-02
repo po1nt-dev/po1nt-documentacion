@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant T as Terminal
+    participant S as MS-Sync
+    participant DB as SQL Server
+
+    T->>S: GET /api/Event/sync
+    S->>DB: Query terminal_sync pendientes
+    DB-->>S: Lista sincronizaciones
+    S-->>T: [{type, guid, ruta}]
+
+    T->>S: GET /api/Sync/{type}
+    S->>DB: EXEC SP_{procedimiento}
+    DB-->>S: DataTable
+    S->>DB: UPDATE date_send
+    S-->>T: JSON data
+
+    T->>S: POST /api/Sync/{type}
+    S->>DB: UPDATE date_confirm
+    S-->>T: 200 OK

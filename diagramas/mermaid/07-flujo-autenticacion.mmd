@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant U as Usuario
+    participant F as Frontend (Nuxt)
+    participant A as MS-Autn
+    participant DB as SQL Server
+
+    U->>F: Ingresa credenciales
+    F->>A: POST /api/Auth {username, password}
+    A->>DB: SELECT user WHERE username
+    DB-->>A: User data
+    A->>A: BCrypt.Verify(password)
+    A->>A: Crypto.Encrypt(JWT)
+    A->>DB: INSERT session
+    A-->>F: {token, type: "Bearer", duration: 20}
+    F->>F: Almacena token en cookie
+    F-->>U: Redirige a dashboard

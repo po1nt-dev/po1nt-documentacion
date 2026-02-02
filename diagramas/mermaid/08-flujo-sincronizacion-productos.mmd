@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant A as Admin (Nuxt)
+    participant P as MS-Products
+    participant S as SyncEvent
+    participant DB as SQL Server
+    participant Sync as MS-Sync
+    participant T as Terminal POS
+
+    A->>P: POST /api/products {producto}
+    P->>DB: INSERT products
+    P->>S: SyncEvent.save({action: "create-product"})
+    S->>DB: INSERT terminal_sync (pendiente)
+    P-->>A: 200 OK
+
+    Note over T,Sync: Cada 5 minutos
+    T->>Sync: GET /api/Event/sync
+    Sync->>DB: SELECT terminal_sync pendientes
+    Sync-->>T: [{type: "products", guid}]
+    T->>Sync: GET /api/Sync/products
+    Sync->>DB: EXEC SP_Sync_Products
+    DB-->>Sync: DataTable productos
+    Sync->>DB: UPDATE date_send
+    Sync-->>T: JSON productos
+    T->>T: Procesa productos
+    T->>Sync: POST /api/Sync/products
+    Sync->>DB: UPDATE date_confirm

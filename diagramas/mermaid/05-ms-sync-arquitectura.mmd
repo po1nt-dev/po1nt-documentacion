@@ -1,0 +1,26 @@
+flowchart TB
+    subgraph "Controllers"
+        A[EventController]
+        B[SyncController]
+    end
+
+    subgraph "Repositories"
+        C[TerminalSyncRepository]
+        D[SyncTypeRepository]
+    end
+
+    subgraph "Models"
+        E[Terminal]
+        F[TerminalSync]
+        G[SyncType]
+        H[Event]
+    end
+
+    subgraph "Database"
+        I[(terminals)]
+        J[(terminal_sync)]
+        K[(sync_types)]
+    end
+
+    A --> C --> I & J
+    B --> C & D --> J & K

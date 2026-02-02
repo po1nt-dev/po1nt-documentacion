@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant C as Cajero
+    participant POS as po1nt-pos
+    participant DB as BD Local
+    participant L as ms-procesos-locales
+    participant MH as Ministerio Hacienda
+
+    C->>POS: Escanea productos
+    POS->>DB: SELECT precio, promocion
+    DB-->>POS: Datos producto
+    POS->>POS: Calcula totales
+    C->>POS: Selecciona forma pago
+    C->>POS: Finaliza venta
+    POS->>DB: INSERT transaccion
+    POS->>L: POST /api/FacturacionElectronica/sendFact
+    L->>L: Genera estructura DTE
+    L->>MH: Envia factura electronica
+    MH-->>L: Sello y codigo
+    L->>DB: UPDATE transaccion (sello)
+    L-->>POS: DTE confirmado
+    POS->>POS: Imprime recibo
+    POS-->>C: Venta completada

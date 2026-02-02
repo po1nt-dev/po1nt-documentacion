@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant T as Timer Service
+    participant API as MS-Sync API
+    participant DBC as BD Central
+    participant DBL as BD Local
+    participant SP as Stored Procedures
+
+    Note over T: Cada 5 minutos
+    T->>API: GET /api/Event/sync (token)
+    API->>DBC: Query cambios pendientes
+    DBC-->>API: Lista cambios
+
+    loop Por cada cambio
+        T->>API: GET /api/Sync/{tipo}
+        API->>DBC: EXEC SP_{tipo}
+        DBC-->>API: DataTable
+        API-->>T: JSON datos
+        T->>DBL: EXEC SP_Apply_{tipo}
+        DBL-->>T: Aplicado
+        T->>API: POST /api/Sync/{tipo} (confirmar)
+        API->>DBC: UPDATE date_confirm
+    end

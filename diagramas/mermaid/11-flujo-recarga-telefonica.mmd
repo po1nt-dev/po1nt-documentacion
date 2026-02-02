@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant C as Cajero
+    participant POS as po1nt-pos
+    participant MS as ms-corresponsales
+    participant T as Tigo/Claro API
+    participant DB as SQL Server
+
+    C->>POS: Selecciona operador y monto
+    POS->>MS: GET /api/BalanceCompanies
+    MS->>T: Consulta saldo agente
+    T-->>MS: Saldo disponible
+    MS-->>POS: Saldo OK
+
+    C->>POS: Ingresa numero telefono
+    POS->>MS: POST /api/RechargeCompanies
+    MS->>T: Ejecuta recarga
+    T-->>MS: Confirmacion recarga
+    MS->>DB: INSERT transaccion
+    MS-->>POS: Recarga exitosa
+    POS->>POS: Imprime comprobante

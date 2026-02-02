@@ -1,0 +1,24 @@
+sequenceDiagram
+    participant S as ws-reenviodte
+    participant DB as SQL Server
+    participant L as ms-procesos-locales
+    participant MH as Ministerio Hacienda
+
+    Note over S: 1:00 AM - 6:00 AM
+    S->>S: Timer cada 30 min
+    S->>DB: SELECT transacciones sin sello
+    DB-->>S: Lista transacciones fallidas
+
+    loop Por cada transaccion
+        S->>L: POST /api/FacturacionElectronica/sendFact
+        L->>MH: Envia DTE
+        alt Exito
+            MH-->>L: Sello electronico
+            L->>DB: UPDATE transaccion (sello)
+        else Fallo
+            MH-->>L: Error
+            L->>DB: INSERT log error
+        end
+    end
+
+    S->>S: Escribe log resultados
