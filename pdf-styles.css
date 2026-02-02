@@ -127,6 +127,21 @@ blockquote {
   font-style: italic;
 }
 
+/* Images - ensure they fit within page margins */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 15px auto;
+  page-break-inside: avoid;
+}
+
+/* Paragraphs containing images */
+p:has(img) {
+  text-align: center;
+  page-break-inside: avoid;
+}
+
 /* Page breaks */
 .page-break {
   page-break-after: always;
