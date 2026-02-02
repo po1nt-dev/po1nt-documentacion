@@ -165,6 +165,4 @@ flowchart TB
 
 ---
 
-*Documentacion generada automaticamente - Febrero 2026*
-
 *Total de repositorios documentados: 22*

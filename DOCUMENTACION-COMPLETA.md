@@ -1,7 +1,6 @@
 
-# Plataforma po1nt - POS
-## Documentacion Tecnica Completa
-
+# Documentacion Tecnica Completa
+## Plataforma po1nt - POS
 ---
 
 **Version:** 1.0
