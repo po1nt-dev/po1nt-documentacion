@@ -99,12 +99,14 @@ flowchart TB
 | Configuracion | [componentes/MS-configs.md](./componentes/MS-configs.md) | .NET 7 |
 | Productos | [componentes/MS-Products.md](./componentes/MS-Products.md) | .NET 7 |
 | Sincronizacion | [componentes/MS-Sync.md](./componentes/MS-Sync.md) | .NET 7 |
+| Logger | [componentes/MS-Logger.md](./componentes/MS-Logger.md) | .NET 7 |
 | Procesos Locales | [componentes/ms-procesos-locales.md](./componentes/ms-procesos-locales.md) | .NET 7 |
 | Pagos Terceros | [componentes/ms-corresponsales-no-bancarios.md](./componentes/ms-corresponsales-no-bancarios.md) | .NET 7 |
 | Libreria Compartida | [componentes/shared-libs.md](./componentes/shared-libs.md) | .NET 7 |
 | Sincronizadores | [componentes/sincronizadores.md](./componentes/sincronizadores.md) | VB.NET |
 | Jobs y Migraciones | [componentes/jobs-y-migraciones.md](./componentes/jobs-y-migraciones.md) | .NET 7 / EF Core |
 | Monitoreo | [componentes/po1nt-monitoring.md](./componentes/po1nt-monitoring.md) | Prometheus / Grafana |
+| SQL Queries | [componentes/po1nt-sql-queries.md](./componentes/po1nt-sql-queries.md) | SQL Server |
 | Otros | [componentes/otros-componentes.md](./componentes/otros-componentes.md) | Varios |
 
 ## Guia de Lectura por Rol
@@ -162,7 +164,9 @@ flowchart TB
 | 20 | po1nt-monitoring | Infraestructura | Batch / Helm |
 | 21 | po1nt-carga-apps | Desktop App | C# WinForms |
 | 22 | po1nt-pos-version-updater | Scripts | Batch |
+| 23 | po1nt-sql-queries | SQL Queries | SQL Server |
+| 24 | po1nt-documentacion | Documentacion | Markdown |
 
 ---
 
-*Total de repositorios documentados: 22*
+*Total de repositorios documentados: 24*
