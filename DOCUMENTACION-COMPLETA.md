@@ -3,9 +3,9 @@
 ## Plataforma po1nt - POS
 ---
 
-**Version:** 1.0
+**Version:** 1.1
 **Fecha:** Febrero 2026
-**Repositorios documentados:** 22
+**Repositorios documentados:** 24
 **Organizacion:** n1co
 
 ---
@@ -21,15 +21,17 @@
    - 5.2 [MS-configs - Configuracion](#52-ms-configs---microservicio-de-configuracion)
    - 5.3 [MS-Products - Productos](#53-ms-products---microservicio-de-productos)
    - 5.4 [MS-Sync - Sincronizacion](#54-ms-sync---microservicio-de-sincronizacion)
-   - 5.5 [ms-procesos-locales - Facturacion DTE](#55-ms-procesos-locales---microservicio-de-procesos-locales)
-   - 5.6 [ms-corresponsales-no-bancarios - Pagos Terceros](#56-ms-corresponsales-no-bancarios---microservicio-de-pagos-a-terceros)
-   - 5.7 [shared-libs - Libreria Compartida](#57-shared-libs---libreria-compartida)
-   - 5.8 [nuxt-front-admin - Portal Web](#58-nuxt-front-admin---portal-administrativo-web)
-   - 5.9 [po1nt-pos - Aplicacion POS](#59-po1nt-pos---aplicacion-punto-de-venta)
-   - 5.10 [Sincronizadores - Windows Services](#510-sincronizadores---windows-services)
-   - 5.11 [Jobs y Migraciones](#511-jobs-y-migraciones)
-   - 5.12 [po1nt-monitoring - Monitoreo](#512-po1nt-monitoring---sistema-de-monitoreo)
-   - 5.13 [Otros Componentes](#513-otros-componentes)
+   - 5.5 [MS-Logger - Logging Centralizado](#55-ms-logger---microservicio-de-logging)
+   - 5.6 [ms-procesos-locales - Facturacion DTE](#56-ms-procesos-locales---microservicio-de-procesos-locales)
+   - 5.7 [ms-corresponsales-no-bancarios - Pagos Terceros](#57-ms-corresponsales-no-bancarios---microservicio-de-pagos-a-terceros)
+   - 5.8 [shared-libs - Libreria Compartida](#58-shared-libs---libreria-compartida)
+   - 5.9 [nuxt-front-admin - Portal Web](#59-nuxt-front-admin---portal-administrativo-web)
+   - 5.10 [po1nt-pos - Aplicacion POS](#510-po1nt-pos---aplicacion-punto-de-venta)
+   - 5.11 [Sincronizadores - Windows Services](#511-sincronizadores---windows-services)
+   - 5.12 [Jobs y Migraciones](#512-jobs-y-migraciones)
+   - 5.13 [po1nt-monitoring - Monitoreo](#513-po1nt-monitoring---sistema-de-monitoreo)
+   - 5.14 [po1nt-sql-queries - Consultas SQL](#514-po1nt-sql-queries---repositorio-de-consultas)
+   - 5.15 [Otros Componentes](#515-otros-componentes)
 6. [Repositorios del Sistema](#6-repositorios-del-sistema)
 
 ---
@@ -703,7 +705,62 @@ Recibe transacciones desde terminal (XML)
 
 ---
 
-## 5.5 ms-procesos-locales - Microservicio de Procesos Locales
+## 5.5 MS-Logger - Microservicio de Logging
+
+### Proposito y Responsabilidades
+
+Recoleccion y almacenamiento centralizado de logs y transacciones:
+- Registro de acciones de usuarios
+- Almacenamiento de transacciones para auditoria
+- Trazabilidad de operaciones del sistema
+
+### Estructura de Carpetas
+
+```
+MS-Logger/
+├── Controllers/
+│   ├── LogController.cs          # Endpoint para logs
+│   └── TransactionController.cs  # Endpoint para transacciones
+├── Models/
+│   └── Log.cs
+├── Repositories/
+│   ├── LoggerRepository.cs
+│   └── TransactionRepository.cs
+├── Program.cs
+└── MS-Logger.csproj
+```
+
+### APIs Expuestas
+
+| Metodo | Ruta | Descripcion |
+|--------|------|-------------|
+| POST | /api/Log | Guardar log de accion |
+| POST | /api/Transaction | Guardar transaccion raw |
+
+### Modelo de Datos
+
+**Tabla logs:**
+```sql
+CREATE TABLE logs (
+  id bigint primary key identity,
+  action_name VARCHAR(255) NOT NULL,
+  status bit NOT NULL,
+  uuid VARCHAR(255) NOT NULL,
+  terminal int not null,
+  place int not NULL,
+  detail VARCHAR(MAX) NOT NULL
+);
+```
+
+### Dependencias
+
+- shared-libs (MSDefault, User model)
+- Sentry (monitoreo de errores)
+- SQL Server (almacenamiento)
+
+---
+
+## 5.6 ms-procesos-locales - Microservicio de Procesos Locales
 
 ### Proposito y Responsabilidades
 
@@ -767,7 +824,7 @@ ms-procesos-locales/
 
 ---
 
-## 5.6 ms-corresponsales-no-bancarios - Microservicio de Pagos a Terceros
+## 5.7 ms-corresponsales-no-bancarios - Microservicio de Pagos a Terceros
 
 ### Proposito y Responsabilidades
 
@@ -852,7 +909,7 @@ ms-corresponsales-no-bancarios/
 
 ---
 
-## 5.7 shared-libs - Libreria Compartida
+## 5.8 shared-libs - Libreria Compartida
 
 ### Proposito y Responsabilidades
 
@@ -956,7 +1013,7 @@ init(app, "ms-name"): void
 
 ---
 
-## 5.8 nuxt-front-admin - Portal Administrativo Web
+## 5.9 nuxt-front-admin - Portal Administrativo Web
 
 ### Proposito y Responsabilidades
 
@@ -1049,7 +1106,7 @@ nuxt-front-admin/
 
 ---
 
-## 5.9 po1nt-pos - Aplicacion Punto de Venta
+## 5.10 po1nt-pos - Aplicacion Punto de Venta
 
 ### Proposito y Responsabilidades
 
@@ -1130,7 +1187,7 @@ po1nt-pos/
 
 ---
 
-## 5.10 Sincronizadores - Windows Services
+## 5.11 Sincronizadores - Windows Services
 
 ### Vision General
 
@@ -1231,7 +1288,7 @@ Todos generan logs en: `C:\epdsoft\Services_Server\Log\`
 
 ---
 
-## 5.11 Jobs y Migraciones
+## 5.12 Jobs y Migraciones
 
 ### cron-jobs
 
@@ -1310,7 +1367,7 @@ dotnet ef database update
 
 ---
 
-## 5.12 po1nt-monitoring - Sistema de Monitoreo
+## 5.13 po1nt-monitoring - Sistema de Monitoreo
 
 ### Proposito y Responsabilidades
 
@@ -1406,29 +1463,79 @@ po1nt-monitoring/
 
 ---
 
-## 5.13 Otros Componentes
+## 5.14 po1nt-sql-queries - Repositorio de Consultas SQL
 
-### MS-Logger
+### Proposito y Responsabilidades
 
-**Proposito**: Microservicio de logging centralizado
+Repositorio centralizado de consultas SQL documentadas y validadas:
+- Queries de auditoria para el sistema POS
+- Consultas de analisis y reporteria
+- Documentacion tecnica de estructura de BD
+
+### Estructura del Repositorio
+
+```
+po1nt-sql-queries/
+├── README.md                           # Documentacion principal
+├── MEMORIA_TECNICA.md                  # Documentacion tecnica
+├── LECCIONES_APRENDIDAS_2025_09_18.md  # Debugging BD central
+└── auditoria/                          # 18 queries de auditoria
+    ├── A_facturacion_tienda_online.sql
+    ├── B_descuentos_empleados.sql
+    ├── C_cambios_precio.sql
+    └── ... (18 queries total)
+```
+
+### Catalogo de Queries
+
+| Query | Descripcion |
+|-------|-------------|
+| A_facturacion_tienda_online | Transacciones tienda online |
+| B_descuentos_empleados | Descuentos a empleados |
+| C_cambios_precio | Cambios de precio manuales |
+| D_ofertas | Promociones y ofertas |
+| E_devoluciones | Devoluciones |
+| F_descuentos_por_funcion | Promociones bancarias |
+| G_remesas | Remesas internacionales |
+| H_medios_pago | Analisis medios de pago |
+| I_productos_escaneados | Escaneados vs manuales |
+| J_inicio_cierre_cajero | Turnos de cajero |
+| K_tablas_xyz | Reportes X, Y, Z |
+| L_pasarela_pagos | Transacciones tarjetas |
+| M_documentos_tributarios | Documentos DTE |
+| N_cancelaciones_anulaciones | Transacciones anuladas |
+| O_transacciones_standby | Transacciones pendientes |
+| P_ingreso_retiro_fondos | Movimientos de caja |
+| Q_retiro_efectivo_venta | Analisis de vuelto |
+| R_tigomoney | Transacciones TigoMoney |
+
+### Tipos de Pago Principales
+
+| ID | Descripcion |
+|----|-------------|
+| 0 | Efectivo |
+| 2 | Tarjeta de Credito |
+| 4 | Tarjeta de Debito |
+| 80 | TigoMoney |
+
+---
+
+## 5.15 Otros Componentes
+
+### portaladministrativo-desktop
+
+**Proposito**: Portal administrativo de escritorio secundario
 
 | Caracteristica | Valor |
 |----------------|-------|
-| Framework | .NET 7.0 |
+| Framework | .NET Framework 4.x |
 | Lenguaje | C# |
-| Tipo | REST API |
+| Tipo | Windows Forms |
 
-**APIs**:
-| Metodo | Ruta | Descripcion |
-|--------|------|-------------|
-| POST | /api/log | Guardar log de accion |
-| POST | /api/transaction | Guardar transaccion completa |
-
-**Tablas**:
-- logs (action_name, status, uuid, terminal, place, detail)
-- transactions
-- transactions_details
-- transactions_pays
+**Funcionalidad**:
+- Acceso administrativo desde escritorio Windows
+- Complementa el portal web nuxt-front-admin
+- Operaciones administrativas locales
 
 ### po1nt-carga-apps
 
@@ -1530,6 +1637,8 @@ po1nt-monitoring/
 | 20 | po1nt-monitoring | Infraestructura | Batch / Helm |
 | 21 | po1nt-carga-apps | Desktop App | C# WinForms |
 | 22 | po1nt-pos-version-updater | Scripts | Batch |
+| 23 | po1nt-sql-queries | SQL Queries | SQL Server |
+| 24 | po1nt-documentacion | Documentacion | Markdown |
 
 ---
 
@@ -1545,25 +1654,25 @@ po1nt-monitoring/
 
 ## Para Desarrolladores Backend
 1. Seccion 2: Arquitectura General
-2. Seccion 5.7: shared-libs
-3. Secciones 5.1-5.6: Microservicios
+2. Seccion 5.8: shared-libs
+3. Secciones 5.1-5.7: Microservicios
 4. Seccion 3: Flujos de Negocio
 
 ## Para Desarrolladores Frontend
 1. Seccion 2: Arquitectura General
-2. Seccion 5.8: nuxt-front-admin
+2. Seccion 5.9: nuxt-front-admin
 3. Seccion 3.1: Flujo de Autenticacion
 
 ## Para Desarrolladores POS / Desktop
-1. Seccion 5.9: po1nt-pos
-2. Seccion 5.10: Sincronizadores
-3. Seccion 5.13: Otros Componentes
+1. Seccion 5.10: po1nt-pos
+2. Seccion 5.11: Sincronizadores
+3. Seccion 5.15: Otros Componentes
 4. Seccion 3: Flujos de Negocio
 
 ## Para DevOps / SRE
 1. Seccion 2: Arquitectura General
-2. Seccion 5.12: po1nt-monitoring
-3. Seccion 5.11: Jobs y Migraciones
+2. Seccion 5.13: po1nt-monitoring
+3. Seccion 5.12: Jobs y Migraciones
 4. Seccion 4: Matriz de Dependencias
 
 ## Para QA / Analistas
