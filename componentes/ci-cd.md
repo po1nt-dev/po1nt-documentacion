@@ -1,8 +1,8 @@
-# CI/CD — GitHub Actions con Self-Hosted Runner
+# CI/CD — GitHub Actions con Self-Hosted Runners y ghcr.io
 
 ## Resumen
 
-El pipeline de CI/CD automatiza el build y deploy de microservicios .NET 7 a produccion utilizando GitHub Actions con un self-hosted runner instalado directamente en el servidor de produccion (srvpointapp01).
+El pipeline de CI/CD automatiza el build y deploy de microservicios .NET 7 a produccion utilizando GitHub Actions con self-hosted runners en ambos servidores. Las imagenes se almacenan en GitHub Container Registry (ghcr.io) como registry centralizado.
 
 ## Arquitectura del Pipeline
 
@@ -10,11 +10,11 @@ El pipeline de CI/CD automatiza el build y deploy de microservicios .NET 7 a pro
 flowchart LR
     DEV[Developer] -->|push| PROD_BRANCH[branch production]
     PROD_BRANCH -->|trigger| GHA[GitHub Actions]
-    GHA -->|runs-on| RUNNER[Self-Hosted Runner<br>srvpointapp01]
-    RUNNER -->|dotnet build| BUILD[Build .NET]
-    BUILD -->|docker build| DOCKER[Imagen Docker]
-    DOCKER -->|docker push| REGISTRY[Registry<br>192.168.15.105:5000]
-    REGISTRY -->|kubectl set image| K8S[MicroK8s<br>namespace po1nt]
+    GHA -->|build job| BUILDER[Runner po1nt-builder<br>cualquier servidor]
+    BUILDER -->|dotnet build + docker build| IMAGE[Imagen Docker]
+    IMAGE -->|docker push| GHCR[ghcr.io/po1nt-dev]
+    GHCR -->|deploy-prod| PROD[srvpointapp01<br>kubectl set image]
+    GHCR -->|deploy-dr| DR[srvpointapp02<br>kubectl set image]
 ```
 
 ## Flujo de branches
@@ -28,32 +28,50 @@ gitgraph
     merge feat/nueva-funcionalidad id: "PR merge a main"
     branch production
     commit id: "PR merge a production"
-    commit id: "auto-deploy a K8s" type: HIGHLIGHT
+    commit id: "auto-deploy a ambos servidores" type: HIGHLIGHT
 ```
 
 - **`main`**: branch principal de desarrollo. Requiere PR con 1 aprobacion.
-- **`production`**: branch de produccion. Requiere PR con 1 aprobacion. El push a esta branch dispara el deploy automatico.
+- **`production`**: branch de produccion. Requiere PR con 1 aprobacion. El push a esta branch dispara el deploy automatico a ambos servidores.
 - **`feat/*`, `fix/*`**: branches de trabajo que se mergean a `main` via PR.
 
-## Componentes
+## Self-Hosted Runners
 
-### Self-Hosted Runner
+| Atributo | srvpointapp01 (principal) | srvpointapp02 (DR) |
+|---|---|---|
+| Nombre | srvpointapp01 | srvpointapp02 |
+| IP | 192.168.15.105 | 192.168.15.121 |
+| Labels | self-hosted, po1nt-prod, po1nt-builder | self-hosted, po1nt-dr, po1nt-builder |
+| Servicio | actions.runner.po1nt-dev.srvpointapp01 | actions.runner.po1nt-dev.srvpointapp02 |
 
-| Atributo | Valor |
-|---|---|
-| Servidor | srvpointapp01 (192.168.15.105) |
-| Usuario | github-runner |
-| Labels | self-hosted, linux, x64, po1nt-prod |
-| Servicio | actions.runner.po1nt-dev.srvpointapp01.service |
+El label `po1nt-builder` esta en ambos runners. El job de build corre en el primero que este disponible (fallback automatico).
 
-El runner tiene acceso directo a Docker, .NET SDK 7 y `microk8s kubectl`, lo que permite ejecutar todo el pipeline sin dependencias externas.
+## Container Registry
 
-### Workflow Reutilizable
+**Registry centralizado:** `ghcr.io/po1nt-dev`
+
+Las imagenes se pushean a ghcr.io y ambos servidores hacen pull de la misma imagen exacta, garantizando que ambos clusters corren codigo identico.
+
+Para ver las imagenes: https://github.com/orgs/po1nt-dev/packages
+
+Los registries locales (192.168.15.105:5000 y 192.168.15.121:5000) siguen funcionando como cache pero el pipeline principal usa ghcr.io.
+
+## Workflow Reutilizable
 
 **Repositorio**: `po1nt-dev/.github`
 **Archivo**: `.github/workflows/build-deploy-dotnet.yml`
 
-Acepta 3 parametros obligatorios:
+### Jobs del pipeline
+
+| Job | Runner | Funcion |
+|---|---|---|
+| **build** | po1nt-builder (cualquier servidor) | Checkout, dotnet build, docker build, push a ghcr.io |
+| **deploy-prod** | po1nt-prod (srvpointapp01) | Pull desde ghcr.io, kubectl set image |
+| **deploy-dr** | po1nt-dr (srvpointapp02) | Pull desde ghcr.io, kubectl set image |
+
+Los jobs deploy-prod y deploy-dr corren **en paralelo** e **independientes** — si uno falla, el otro continua. Ambos usan el mismo tag generado por el job build.
+
+### Parametros
 
 | Parametro | Descripcion | Ejemplo |
 |---|---|---|
@@ -63,7 +81,7 @@ Acepta 3 parametros obligatorios:
 
 ### Invocacion por Microservicio
 
-Cada microservicio tiene un archivo `.github/workflows/deploy.yml` que invoca el workflow reutilizable:
+Cada microservicio tiene un archivo `.github/workflows/deploy.yml`:
 
 ```yaml
 name: Deploy
@@ -97,15 +115,14 @@ jobs:
 
 ## Secrets de Organizacion
 
-Los secrets estan configurados a nivel de la organizacion `po1nt-dev` con visibilidad para todos los repos:
+Configurados a nivel de la organizacion `po1nt-dev`:
 
 | Secret | Proposito |
 |---|---|
-| REGISTRY_HOST | Host del registry privado |
-| REGISTRY_USERNAME | Credenciales del registry |
-| REGISTRY_PASSWORD | Credenciales del registry |
+| GHCR_TOKEN | PAT para push/pull en ghcr.io |
+| GHCR_USERNAME | Usuario para ghcr.io (po1nt-dev) |
 | KUBE_NAMESPACE | Namespace de K8s (po1nt) |
-| SHARED_LIBS_TOKEN | PAT para clonar shared-libs |
+| SHARED_LIBS_TOKEN | PAT para clonar shared-libs (cross-repo) |
 
 ## Dockerfile Estandar
 
@@ -120,28 +137,39 @@ RUN echo -e  "#!/bin/bash\ndotnet ./$PROJECT_NAME.dll" > ./build-net && chmod +x
 CMD [ "./build-net" ]
 ```
 
-La variable `PROJECT_NAME` se pasa como build-arg durante `docker build`.
-
 ## Rollback
 
 Para hacer rollback a una version anterior:
 
 ```bash
-# Ver tags disponibles en el registry
-curl -s -u <user>:<pass> http://192.168.15.105:5000/v2/selectos/<servicio>/tags/list
+# Ver imagenes disponibles en ghcr.io
+# UI: https://github.com/orgs/po1nt-dev/packages
 
-# Rollback al tag anterior
+# Rollback en un servidor
 microk8s kubectl set image deployment/<deployment> \
-  <deployment>=192.168.15.105:5000/selectos/<servicio>:<TAG_ANTERIOR> \
+  <deployment>=ghcr.io/po1nt-dev/selectos/<servicio>:<TAG_ANTERIOR> \
   -n po1nt
 ```
 
-El pipeline mantiene las ultimas 5 imagenes de cada servicio en el servidor para permitir rollback rapido.
+El pipeline mantiene las ultimas 5 imagenes de cada servicio en el servidor local.
 
 ## Deploy Manual
 
 Ademas del deploy automatico, se puede disparar manualmente desde la UI de GitHub:
 1. Ir al repositorio en GitHub
-2. Pestaña **Actions**
+2. Pestana **Actions**
 3. Seleccionar el workflow **Deploy**
-4. Click en **Run workflow** (desde cualquier branch, pero se recomienda usar `production`)
+4. Click en **Run workflow**
+
+## Gestion de Secrets
+
+Los secrets de produccion (connection strings, API keys, credenciales de corresponsales) se gestionan de forma centralizada en **Infisical**.
+
+| Atributo | Valor |
+|---|---|
+| URL | http://192.168.15.88:8080 |
+| Servidor | DeveloperTools (VM en host ESXi 192.168.15.253) |
+| Proyecto | po1nt-prod |
+| Environment | prod (29 secrets) |
+
+Ver [gestion-secrets.md](gestion-secrets.md) para mas detalles.
