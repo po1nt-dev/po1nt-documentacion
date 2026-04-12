@@ -68,9 +68,9 @@ La plataforma Po1nt implementa una arquitectura hibrida que combina microservici
 | **JSON** | Newtonsoft.Json | 13.0.3 |
 | **Metricas** | Prometheus | 8.0.1 |
 | **Error Tracking** | Sentry | 2.1.8 |
-| **Contenedores** | Docker | bitnami/aspnet-core:7 |
-| **CI/CD** | GitLab CI | - |
-| **Orquestacion** | Azure Kubernetes Service | 1.30 |
+| **Contenedores** | Docker | bitnamilegacy/aspnet-core:7 |
+| **CI/CD** | GitHub Actions (self-hosted runner) | po1nt-dev/.github |
+| **Orquestacion** | MicroK8s | v1.31.14 |
 
 ## Matriz de Comunicacion entre Componentes
 

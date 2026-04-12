@@ -10,6 +10,7 @@ Repositorio central de documentación para el ecosistema Po1nt POS. Contiene doc
 | `ARQUITECTURA-GENERAL.md` | Arquitectura del sistema, stack tecnológico |
 | `FLUJOS-DE-NEGOCIO.md` | Diagramas de flujos (auth, sync, ventas, remesas) |
 | `MATRIZ-DEPENDENCIAS.md` | Dependencias entre componentes |
+| `componentes/ci-cd.md` | Pipeline CI/CD con GitHub Actions |
 
 ### Documentación por Componente (`componentes/`)
 
