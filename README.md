@@ -10,8 +10,18 @@ Repositorio central de documentación para el ecosistema Po1nt POS. Contiene doc
 | `ARQUITECTURA-GENERAL.md` | Arquitectura del sistema, stack tecnológico |
 | `FLUJOS-DE-NEGOCIO.md` | Diagramas de flujos (auth, sync, ventas, remesas) |
 | `MATRIZ-DEPENDENCIAS.md` | Dependencias entre componentes |
+| `sincronizaciones/` | **Cómo fluye la información entre ERP, central, salas y cajas, objeto por objeto** |
 | `componentes/ci-cd.md` | Pipeline CI/CD con GitHub Actions y ghcr.io |
 | `componentes/gestion-secrets.md` | Gestión centralizada de secrets con Infisical |
+
+### Sincronizaciones (`sincronizaciones/`)
+
+Sección dedicada al flujo de datos. Responde "este dato, ¿por dónde viaja, quién lo aplica
+y dónde se pierde?" — que es la pregunta de cada incidente. Incluye un documento por
+objeto sincronizado (productos, precios, **clientes**, **empleados**, transacciones, DTE…)
+y el estado de entrega de los cambios pendientes de mergear e instalar.
+
+Todo lo que se afirma ahí está verificado contra el código, citando `archivo:línea`.
 
 ### Documentación por Componente (`componentes/`)
 

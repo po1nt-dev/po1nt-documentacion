@@ -1,25 +1,51 @@
 flowchart TB
-    subgraph "Sincronizadores"
-        A[epdPo1nt_Syncronizador]
-        B[WS-SincronizadorSalas]
-        C[WS-SincronizacionBascula]
-        D[sincronizacion-sala]
-        E[ws-reenviodte]
+    subgraph CENTRAL["Central"]
+        MS[MS-Sync API]
+        DBC[(BD Central<br/>po1nt_pos / selectos3)]
+        TS[(terminal_sync)]
     end
 
-    subgraph "APIs"
-        F[MS-Sync API]
-        G[Ministerio Hacienda]
+    subgraph SALA["Servidor de sala / NAV"]
+        A["epdPo1nt_Syncronizador<br/>(subida: ventas, cortes,<br/>cajeros, clientes)"]
+        B["WS-SincronizadorSalas<br/>= epdPo1nt_SyncronizadorProductos<br/>(bajada: productos, barcodes,<br/>precios, promociones)"]
+        C["WS-SincronizacionBascula<br/>(precios a basculas)"]
+        E["po1nt-dte-reproceso<br/>(reintento DTE)"]
+        E2["ws-reenviodte<br/>(legado, 1-6 AM)"]
     end
 
-    subgraph "Bases de Datos"
-        H[(BD Central)]
-        I[(BD Sucursales)]
+    subgraph EQUIPO["Equipo de sala"]
+        D["sincronizacion-sala<br/>APP DE ESCRITORIO<br/>(clientes y tipos genericos)"]
+        P["portaladministrativo-desktop<br/>= epdServerSala_Po1nt<br/>(envios manuales)"]
     end
 
-    A --> H & I
-    B --> F --> H
-    B --> I
-    C --> H
-    D --> F
-    E --> H & G
+    DBS[(BD Sala<br/>SatellitePOS_SUCURSAL_xx)]
+    CAJAS[(Cajas<br/>SatellitePOS_MH)]
+    BAS[(Basculas)]
+    MH[Ministerio de Hacienda]
+
+    %% Canal 1: cola terminal_sync via MS-Sync
+    DBC --> TS --> MS
+    MS -->|"GET /api/Event/sync<br/>caja de referencia"| B
+    MS -->|"GET /api/Sync/device<br/>+ /api/Event/sync"| D
+    B --> DBS
+    B -->|"SQL directo<br/>POS_Sync_Create*"| CAJAS
+    D -->|"SQL directo por IP"| CAJAS
+
+    %% Canal 2: SQL directo de subida
+    CAJAS -->|"Transmitir=0"| A
+    A -->|"SQL directo"| DBS
+    A -->|"SQL directo<br/>Sync_Aplicar_*"| DBC
+
+    %% Basculas
+    DBS --> C --> BAS
+
+    %% Canal 3: colas locales de DTE
+    CAJAS -->|"DTE_ColaEnvio"| E
+    E -->|"POST sendFactDesacople"| MH
+    CAJAS --> E2 --> MH
+
+    %% Camino manual que salta terminal_sync
+    P -.->|"escribe directo,<br/>sin pasar por terminal_sync"| CAJAS
+
+    classDef manual stroke-dasharray: 5 5
+    class P manual
